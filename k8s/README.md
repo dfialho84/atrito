@@ -30,3 +30,17 @@ Check installation:
 ```sh
 $ kubectl version --client --output=yaml
 ```
+
+### Utils
+
+Base64 encode variable
+
+```sh
+$ echo -n 'value' | base64
+```
+
+All resources on cluster:
+
+```sh
+$ kubectl api-resources
+```

@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mongodb-deployment
+    namespace: mongodb
+    labels:
+        app: mongodb
+spec:
+    selector:
+        matchLabels:
+            app: mongodb
+    replicas: 1
+    template:
+        metadata:
+            namespace: mongodb
+            labels:
+                app: mongodb
+        spec:
+            containers:
+                - name: mongodb
+                  image: mongo:latest
+                  env:
+                      - name: MONGO_INITDB_ROOT_USERNAME
+                        valueFrom:
+                            secretKeyRef:
+                                name: mongodb-secret
+                                key: mongo-root-username
+                      - name: MONGO_INITDB_ROOT_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: mongodb-secret
+                                key: mongo-root-password
+                  ports:
+                      - containerPort: 27017
+                  volumeMounts:
+                      - name: localtime
+                        mountPath: /etc/localtime
+                      - name: data
+                        mountPath: /data/db
+            volumes:
+                - name: localtime
+                  hostPath:
+                      path: /usr/share/zoneinfo/Asia/Shanghai
+                - name: data
+                  persistentVolumeClaim:
+                      claimName: mongodb-pvc
+            restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: mongodb-service
+    namespace: mongodb
+spec:
+    selector:
+        app: mongodb
+    ports:
+        - protocol: TCP
+          port: 27017
+          targetPort: 27017
